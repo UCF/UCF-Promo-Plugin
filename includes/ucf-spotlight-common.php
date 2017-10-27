@@ -6,7 +6,7 @@
 if ( ! class_exists( 'UCF_Spotlight_Common' ) ) {
 	class UCF_Spotlight_Common {
 
-		public function enqueue_styles() {
+		public static function enqueue_styles() {
 			if ( get_option( 'ucf_spotlight_include_css' ) ) {
 				wp_enqueue_style( 'ucf_spotlight_css', plugins_url( 'static/css/ucf-spotlight.min.css', UCF_SPOTLIGHT__PLUGIN_FILE ), false, false, 'all' );
 			}
@@ -34,9 +34,20 @@ if ( ! class_exists( 'UCF_Spotlight_Common' ) ) {
 					'post_status' => 'publish',
 					'numberposts' => 1
 				);
-				$post = array_shift( get_posts( $args ) );
 
-				$spotlight_image = ( $thumb = get_post_thumbnail_id( $post->ID ) ) ? array_shift( wp_get_attachment_image_src( $thumb, 'single-post-thumbnail' ) ) : NULL;
+				if( $posts = get_posts( $args ) ) {
+					$post = array_shift( $posts );
+				} else {
+					return;
+				}
+
+				if( $thumb = get_post_thumbnail_id( $post->ID )) {
+					if( $attachments = wp_get_attachment_image_src( $thumb, 'single-post-thumbnail' ) ) {
+						$attachment = array_shift( $attachments );
+					}
+				}
+
+				$spotlight_image = ( $thumb ) ? $attachment : NULL;
 
 				$args = array(
 					'layout'    => get_post_meta( $post->ID, "ucf_spotlight_layout", True ),
@@ -77,10 +88,10 @@ if ( ! class_exists( 'UCF_Spotlight_Common' ) ) {
 						<div class="col-md-8 col-sm-12">
 							<?php if( $args['header'] ): ?>
 								<div class="spotlight-header"><?php echo $args['header'] ?></div>
-							<? endif; ?>
+							<?php endif; ?>
 							<?php if( $args['copy'] ): ?>
 								<p class="spotlight-copy"><?php echo $args['copy'] ?></p>
-							<? endif ?>
+							<?php endif ?>
 							<?php if( $args['link_url'] && $args['link_text'] ): ?>
 								<a class="btn btn-primary" href="<?php echo $args['link_url'] ?>"><?php echo $args['link_text'] ?></a>
 							<?php endif; ?>
@@ -106,10 +117,10 @@ if ( ! class_exists( 'UCF_Spotlight_Common' ) ) {
 				<div class="spotlight-vertical">
 					<?php if( $args['image'] ): ?>
 						<img class="spotlight-image" src="<?php echo $args['image'] ?>" alt="">
-					<? endif; ?>
+					<?php endif; ?>
 					<?php if( $args['header'] ): ?>
 						<div class="spotlight-header"><?php echo $args['header'] ?></div>
-					<? endif; ?>
+					<?php endif; ?>
 					<?php if( $args['copy'] ): ?>
 						<p class="spotlight-copy"><?php echo $args['copy'] ?></p>
 					<?php endif; ?>
@@ -139,7 +150,7 @@ if ( ! class_exists( 'UCF_Spotlight_Common' ) ) {
 					<div class="spotlight-square" style="background-image: url(<?php echo $args['image'] ?>)">
 						<?php if( $args['header'] ): ?>
 							<div class="spotlight-header"><?php echo $args['header'] ?></div>
-						<? endif; ?>
+						<?php endif; ?>
 						<?php if( $args['copy'] ): ?>
 							<p class="spotlight-copy"><?php echo $args['copy'] ?></p>
 						<?php endif; ?>
